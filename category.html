@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
     <title>Access Blocked by HTWORLD IT Dept</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; margin: 40px; }
@@ -23,28 +24,78 @@
     <div class="warning-box">
         <div class="warning-icon">⚠</div>
         <h2>This site is blocked due to Category Policy</h2>
-        <div class="domain" id="domain"></div>
 
-        <!-- Custom Wording -->
+        <!-- Domain placeholder -->
+        <div class="domain" id="domain">[domain]</div>
+
+        <!-- Your wording -->
         <p>HTWORLD has blocked this URL as it is not allowed based on HTWORLD IT Department Category Policy.</p>
-        <p>If you believe this site to be blocked in error, submit a form below with your comments notating <span id="policy"></span> blocked you, and why you believe it should be lifted.</p>
+        <p>
+            If you believe this site to be blocked in error submit a form below with your comments notating
+            <span id="policy">HTWORLD.Roaming</span> blocked you, and why you believe it should be lifted.
+        </p>
         <p>Your form will be reviewed by our technicians and an email will be sent when a determination has been made.</p>
 
         <!-- Links -->
         <div class="footer-links">
             <a href="https://yourformlink.com">Submit Unblock Request</a> |
-            <a href="#">Report Incorrect Block</a> |
-            <a href="#">Diagnostic Info</a>
+            <a href="#report">Report Incorrect Block</a> |
+            <a href="#diagnostic">Diagnostic Info</a>
         </div>
-        <p style="margin-top:10px; font-size:12px;">This site was blocked due to the following category: <span id="category"></span></p>
+
+        <!-- Show the category name if provided -->
+        <p style="margin-top:10px; font-size:12px;">
+            This site was blocked due to the following category: <span id="category">[category]</span>
+        </p>
     </div>
 
-    <!-- Dynamic Variables -->
+    <!-- Robust parameter parsing -->
     <script>
+      function rot13(str) {
+        return str.replace(/[a-zA-Z]/g, function(c){
+          const base = c <= 'Z' ? 65 : 97;
+          return String.fromCharCode(((c.charCodeAt(0) - base + 13) % 26) + base);
+        });
+      }
+      function extractHostname(urlStr) {
+        try {
+          const decodedFirst = decodeURIComponent(urlStr);
+          const looksRot13 = decodedFirst.startsWith('uggc://');
+          const decoded = looksRot13 ? rot13(decodedFirst) : decodedFirst;
+          const u = new URL(decoded);
+          return u.hostname;
+        } catch (e) {
+          try {
+            const decoded = decodeURIComponent(urlStr);
+            return decoded
+              .replace(/^https?:\/\//i, '')
+              .replace(/^uggc:\/\//i, rot13('uggc://').replace(/^https?:\/\//i, ''))
+              .split('/')[0];
+          } catch (e2) {
+            return '';
+          }
+        }
+      }
+      document.addEventListener('DOMContentLoaded', () => {
         const params = new URLSearchParams(window.location.search);
-        document.getElementById('domain').textContent = params.get('domain') || '[domain]';
-        document.getElementById('policy').textContent = params.get('policy') || 'HTWORLD.Roaming';
-        document.getElementById('category').textContent = params.get('category') || 'Unknown Category';
+
+        // DOMAIN
+        let domain = params.get('domain');
+        if (!domain) {
+          const urlParam = params.get('url');
+          if (urlParam) domain = extractHostname(urlParam);
+        }
+        const domainEl = document.getElementById('domain');
+        if (domainEl) domainEl.textContent = domain || '[domain]';
+
+        // POLICY fallback for Category
+        const policyEl = document.getElementById('policy');
+        if (policyEl) policyEl.textContent = params.get('policy') || 'Unknown Policy';
+
+        // CATEGORY name
+        const categoryEl = document.getElementById('category');
+        if (categoryEl) categoryEl.textContent = params.get('category') || 'Unknown Category';
+      });
     </script>
 </body>
 </html>
