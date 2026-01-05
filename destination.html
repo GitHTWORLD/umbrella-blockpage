@@ -1,0 +1,49 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Access Blocked by HTWORLD IT Dept</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 40px; }
+        .logo img { width: 120px; margin-bottom: 20px; }
+        .warning-box { border: 1px solid #ccc; padding: 20px; margin: 20px auto; width: 60%; background-color: #f9f9f9; border-radius: 8px; }
+        .warning-icon { color: #ff9900; font-size: 24px; margin-bottom: 10px; }
+        .domain { font-weight: bold; font-size: 18px; margin: 10px 0; }
+        .footer-links { margin-top: 20px; font-size: 14px; }
+        .footer-links a { margin: 0 10px; color: #0073e6; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <!-- Logo -->
+    <div class="logo">
+        <img src="https://raw.githubusercontent.com/GitHTWORLD/umbrella-blockpage/main/images/htworld-logo.png" alt="HTWORLD Logo">
+    </div>
+
+    <!-- Warning Box -->
+    <div class="warning-box">
+        <div class="warning-icon">⚠</div>
+        <h2>This site is blocked due to Destination List Policy</h2>
+        <div class="domain" id="domain"></div>
+
+        <!-- Custom Wording -->
+        <p>Dougal has blocked this website as it is not allowed based on the policies set forth by the HTWORLD IT Dept.</p>
+        <p>If you believe this site to be blocked in error, submit a form below with your comments notating <span id="policy"></span> blocked you, and why you believe it should be lifted.</p>
+        <p>Your form will be reviewed by our technicians and an email will be sent when a determination has been made.</p>
+
+        <!-- Links -->
+        <div class="footer-links">
+            <a href="https://yourformlink.com">Submit Unblock Request</a> |
+            <a href="#">Report Incorrect Block</a> |
+            <a href="#">Diagnostic Info</a>
+        </div>
+    </div>
+
+    <!-- Dynamic Variables -->
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        document.getElementById('domain').textContent = params.get('domain') || '[domain]';
+        document.getElementById('policy').textContent = params.get('policy') || 'HTWORLD IT Dept';
+    </script>
+</body>
+</html>
+``
