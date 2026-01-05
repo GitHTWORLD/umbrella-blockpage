@@ -15,24 +15,13 @@
 
         /* Discreet diagnostic footer */
         .diagnostic-container {
-            margin: 8px auto 0;
-            width: 60%;
-            text-align: left;
-            font-size: 12px;
-            color: #777;
+            margin: 8px auto 0; width: 60%; text-align: left;
+            font-size: 12px; color: #777;
         }
-        .diagnostic-toggle {
-            cursor: pointer;
-            color: #6a6a6a;
-            text-decoration: underline;
-        }
+        .diagnostic-toggle { cursor: pointer; color: #6a6a6a; text-decoration: underline; }
         .diagnostic-content {
-            display: none;
-            margin-top: 6px;
-            padding-top: 6px;
-            border-top: 1px dashed #ddd;
-            color: #666;
-            word-break: break-word;
+            display: none; margin-top: 6px; padding-top: 6px;
+            border-top: 1px dashed #ddd; color: #666; word-break: break-word;
         }
         .kv { margin: 2px 0; }
         .kv .k { color: #888; }
@@ -42,53 +31,69 @@
 <body>
     <!-- Logo -->
     <div class="logo">
-        <img src="https://raw.githubusercontent.com/GitHTWORLD/umbrella-blockpage/main/images/htworld-logo.jpg" alt="HTWORLD Logo">
+        <img alt="HTWORLD Logo" src="https://raw.githubusercontent.com/GitHTWORLD/umbrella-blockpage/htworld-logo.jpg" />
     </div>
 
     <!-- Warning Box -->
     <div class="warning-box">
         <div class="warning-icon">⚠</div>
         <h2>This site is blocked due to Category Policy</h2>
-
-        <!-- Domain placeholder -->
         <div class="domain" id="domain">[domain]</div>
 
         <!-- Your wording -->
-        <p> <span id="policy">SEE DIAGNOSTICS</span>  has blocked this URL as it is not allowed based on HTWORLD IT Department Category Policy.</p>
+        <p><span id="policy">SEE DIAGNOSTIC INFO</span> has blocked this URL as it is not allowed based on HTWORLD IT Department Category Policy.</p>
         <p>
             If you believe this site to be blocked in error submit a form below with your comments notating
-            <span id="policy">SEE DIAGNOSTICS</span> blocked you, and why you believe it should be lifted.
+            <span id="policy">SEE DIAGNOSTIC INFO</span> blocked you, and why you believe it should be lifted.
         </p>
         <p>Your form will be reviewed by our technicians and an email will be sent when a determination has been made.</p>
 
         <!-- Links -->
         <div class="footer-links">
-            <a href="https://yourformlink.com" target="_blank" rel="noopener">Submit Unblock Request</a> |
-            <a href="https://your-report-link.example" target="_blank" rel="noopener">Report Incorrect Block</a> |
-            <a href="#diagnostic" class="diagnostic-toggle" id="diagnostic-toggle">Diagnostic Info</a>
+            <a href="https://yourformlink.example">Submit Unblock Request</a> |
+            <a href="https://your-report-link.example">Report Incorrect Block</a> |
+            <a href="#" id="diagnostic-toggle">Diagnostic Info</a>
         </div>
 
-        <!-- Show the category name if provided -->
         <p style="margin-top:10px; font-size:12px;">
             This site was blocked due to the following category: <span id="category">[category]</span>
         </p>
     </div>
 
     <!-- Discreet Diagnostic Info (collapsible) -->
-    <div class="diagnostic-container" id="diagnostic">
+    <div class="diagnostic-container">
         <div class="diagnostic-content" id="diagnostic-content">
             <div class="kv"><span class="k">Client IP:</span> <span class="v" id="diag-client-ip">–</span></div>
             <div class="kv"><span class="k">Identity:</span> <span class="v" id="diag-identity">–</span></div>
             <div class="kv"><span class="k">Policy:</span> <span class="v" id="diag-policy">–</span></div>
-            <div class="kv"><span class="k">Block Type:</span> <span class="v" id="diag-type">category</span></div>
+            <div class="kv"><span class="k">Block Type:</span> <span class="v" id="diag-type">Category</span></div>
             <div class="kv"><span class="k">Category:</span> <span class="v" id="diag-category">–</span></div>
             <div class="kv"><span class="k">Raw URL:</span> <span class="v" id="diag-url">–</span></div>
             <div class="kv"><span class="k">Derived Domain:</span> <span class="v" id="diag-domain">–</span></div>
         </div>
     </div>
 
-    <!-- Robust parameter parsing -->
+    <!-- Robust parameter parsing + IP fallback -->
     <script>
+      // IP to Policy fallback mapping
+      const ipPolicyMap = {
+        "23.92.1.137": "DOUGAL",
+        "108.181.101.28": "Thunderbird",
+        "108.181.246.146": "HTWORLD",
+        "108.181.246.149": "Draconic",
+        "108.181.93.188": "Demiguise",
+        "212.83.154.153": "MACUSA",
+        "108.181.101.204": "Retiacula",
+        "108.181.93.189": "Retiacula"
+      };
+      function resolvePolicy(params, defaultPolicyLabel) {
+        const explicitPolicy = params.get('policy');
+        if (explicitPolicy && explicitPolicy.trim() !== '') return explicitPolicy;
+        const clientIp = params.get('client_ip');
+        if (clientIp && ipPolicyMap[clientIp]) return ipPolicyMap[clientIp];
+        return defaultPolicyLabel;
+      }
+
       function rot13(str) {
         return str.replace(/[a-zA-Z]/g, function(c){
           const base = c <= 'Z' ? 65 : 97;
@@ -105,49 +110,42 @@
         } catch (e) {
           try {
             const decoded = decodeURIComponent(urlStr);
-            return decoded
-              .replace(/^https?:\/\//i, '')
-              .replace(/^uggc:\/\//i, rot13('uggc://').replace(/^https?:\/\//i, ''))
-              .split('/')[0];
-          } catch (e2) {
-            return '';
-          }
+            return decoded.replace(/^https?:\/\//i, '').replace(/^uggc:\/\//i, rot13('uggc://').replace(/^https?:\/\//i, '')).split('/')[0];
+          } catch (e2) { return ''; }
         }
       }
 
       document.addEventListener('DOMContentLoaded', () => {
         const params = new URLSearchParams(window.location.search);
 
-        // DOMAIN
+        // Domain from ?domain or derived from ?url
         let domain = params.get('domain');
         const rawUrl = params.get('url');
-        if (!domain && rawUrl) {
-          domain = extractHostname(rawUrl);
-        }
+        if (!domain && rawUrl) domain = extractHostname(rawUrl);
         const domainEl = document.getElementById('domain');
         if (domainEl) domainEl.textContent = domain || '[domain]';
 
-        // POLICY fallback for Category
-        const policy = params.get('policy') || 'HTWORLD.Roaming';
+        // Policy using explicit value or IP fallback (Category default = HTWORLD.Roaming)
+        const policyResolved = resolvePolicy(params, 'HTWORLD.Roaming');
         const policyEl = document.getElementById('policy');
-        if (policyEl) policyEl.textContent = policy;
+        if (policyEl) policyEl.textContent = policyResolved;
 
-        // CATEGORY name
-        const category = params.get('category') || 'Unknown Category';
+        // Category
+        const categoryResolved = params.get('category') || 'Unknown Category';
         const categoryEl = document.getElementById('category');
-        if (categoryEl) categoryEl.textContent = category;
+        if (categoryEl) categoryEl.textContent = categoryResolved;
 
-        // DIAGNOSTIC fields
+        // Diagnostics
         const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || '–'; };
         setText('diag-client-ip', params.get('client_ip'));
         setText('diag-identity', params.get('identity'));
-        setText('diag-policy', policy);
+        setText('diag-policy', policyResolved);
         setText('diag-type', params.get('type') || 'category');
-        setText('diag-category', category);
+        setText('diag-category', categoryResolved);
         setText('diag-url', rawUrl);
         setText('diag-domain', domain);
 
-        // Toggle
+        // Toggle diagnostics
         const toggleLink = document.getElementById('diagnostic-toggle');
         const diagContent = document.getElementById('diagnostic-content');
         if (toggleLink && diagContent) {
