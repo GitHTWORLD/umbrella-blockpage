@@ -21,18 +21,10 @@
             font-size: 12px;
             color: #777;
         }
-        .diagnostic-toggle {
-            cursor: pointer;
-            color: #6a6a6a;
-            text-decoration: underline;
-        }
+        .diagnostic-toggle { cursor: pointer; color: #6a6a6a; text-decoration: underline; }
         .diagnostic-content {
-            display: none;
-            margin-top: 6px;
-            padding-top: 6px;
-            border-top: 1px dashed #ddd;
-            color: #666;
-            word-break: break-word;
+            display: none; margin-top: 6px; padding-top: 6px;
+            border-top: 1px dashed #ddd; color: #666; word-break: break-word;
         }
         .kv { margin: 2px 0; }
         .kv .k { color: #888; }
@@ -42,35 +34,33 @@
 <body>
     <!-- Logo -->
     <div class="logo">
-        <img src="https://raw.githubusercontent.com/GitHTWORLD/umbrella-blockpage/main/images/htworld-logo.jpg" alt="HTWORLD Logo">
+        <img alt="HTWORLD Logo" src="https://raw.githubusercontent.com/GitHTWORLD/umbrella-blockpage/main/images/htworld-logo.jpg" />
     </div>
 
     <!-- Warning Box -->
     <div class="warning-box">
         <div class="warning-icon">⚠</div>
         <h2>This site is blocked due to Destination List Policy</h2>
-
-        <!-- Domain placeholder -->
         <div class="domain" id="domain">[domain]</div>
 
         <!-- Your wording -->
-        <p><span id="policy">SEE DIAGNOSTICS INFO</span>  has blocked this website as it is not allowed based on the policies set forth by the HTWORLD IT Dept.</p>
+        <p><span id="policy">SEE DIAGNOSTIC INFO</span> has blocked this website as it is not allowed based on the policies set forth by the HTWORLD IT Dept.</p>
         <p>
             If you believe this site to be blocked in error, submit a form below with your comments notating
-            <span id="policy">SEE DIAGNOSTICS INFO</span> blocked you, and why you believe it should be lifted.
+            <span id="policy">SEE DIAGNOSTIC INFO</span> blocked you, and why you believe it should be lifted.
         </p>
         <p>Your form will be reviewed by our technicians and an email will be sent when a determination has been made.</p>
 
         <!-- Links -->
         <div class="footer-links">
-            <a href="https://yourformlink.com" target="_blank" rel="noopener">Submit Unblock Request</a> |
-            <a href="https://your-report-link.example" target="_blank" rel="noopener">Report Incorrect Block</a> |
-            <a href="#diagnostic" class="diagnostic-toggle" id="diagnostic-toggle">Diagnostic Info</a>
+            <a href="https://yourformlink.example">Submit Unblock Request</a> |
+            <a href="https://your-report-link.example">Report Incorrect Block</a> |
+            <a href="#" id="diagnostic-toggle">Diagnostic Info</a>
         </div>
     </div>
 
     <!-- Discreet Diagnostic Info (collapsible) -->
-    <div class="diagnostic-container" id="diagnostic">
+    <div class="diagnostic-container">
         <div class="diagnostic-content" id="diagnostic-content">
             <div class="kv"><span class="k">Client IP:</span> <span class="v" id="diag-client-ip">–</span></div>
             <div class="kv"><span class="k">Identity:</span> <span class="v" id="diag-identity">–</span></div>
@@ -82,17 +72,33 @@
         </div>
     </div>
 
-    <!-- Robust parameter parsing -->
+    <!-- Robust parameter parsing + IP fallback -->
     <script>
-      // Helper: ROT13 decode
+      // IP to Policy fallback mapping
+      const ipPolicyMap = {
+        "23.92.1.137": "DOUGAL",
+        "108.181.101.28": "Thunderbird",
+        "108.181.246.146": "HTWORLD",
+        "108.181.246.149": "Draconic",
+        "108.181.93.188": "Demiguise",
+        "212.83.154.153": "MACUSA",
+        "108.181.101.204": "Retiacula",
+        "108.181.93.189": "Retiacula"
+      };
+      function resolvePolicy(params, defaultPolicyLabel) {
+        const explicitPolicy = params.get('policy');
+        if (explicitPolicy && explicitPolicy.trim() !== '') return explicitPolicy;
+        const clientIp = params.get('client_ip');
+        if (clientIp && ipPolicyMap[clientIp]) return ipPolicyMap[clientIp];
+        return defaultPolicyLabel;
+      }
+
       function rot13(str) {
         return str.replace(/[a-zA-Z]/g, function(c){
           const base = c <= 'Z' ? 65 : 97;
           return String.fromCharCode(((c.charCodeAt(0) - base + 13) % 26) + base);
         });
       }
-
-      // Helper: safely get hostname from a URL string
       function extractHostname(urlStr) {
         try {
           const decodedFirst = decodeURIComponent(urlStr);
@@ -103,46 +109,39 @@
         } catch (e) {
           try {
             const decoded = decodeURIComponent(urlStr);
-            return decoded
-              .replace(/^https?:\/\//i, '')
-              .replace(/^uggc:\/\//i, rot13('uggc://').replace(/^https?:\/\//i, ''))
-              .split('/')[0];
-          } catch (e2) {
-            return '';
-          }
+            return decoded.replace(/^https?:\/\//i, '').replace(/^uggc:\/\//i, rot13('uggc://').replace(/^https?:\/\//i, '')).split('/')[0];
+          } catch (e2) { return ''; }
         }
       }
 
       document.addEventListener('DOMContentLoaded', () => {
         const params = new URLSearchParams(window.location.search);
 
-        // DOMAIN: prefer ?domain=; else derive from ?url=
+        // Domain from ?domain or derived from ?url
         let domain = params.get('domain');
         const rawUrl = params.get('url');
-        if (!domain && rawUrl) {
-          domain = extractHostname(rawUrl);
-        }
+        if (!domain && rawUrl) domain = extractHostname(rawUrl);
         const domainEl = document.getElementById('domain');
         if (domainEl) domainEl.textContent = domain || '[domain]';
 
-        // POLICY name
-        const policy = params.get('policy') || 'HTWORLD IT Dept';
+        // Policy using explicit value or IP fallback
+        const policyResolved = resolvePolicy(params, 'HTWORLD IT Dept');
         const policyEl = document.getElementById('policy');
-        if (policyEl) policyEl.textContent = policy;
+        if (policyEl) policyEl.textContent = policyResolved;
 
-        // DIAGNOSTIC fields
-        const diagContent = document.getElementById('diagnostic-content');
+        // Diagnostics
         const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || '–'; };
         setText('diag-client-ip', params.get('client_ip'));
         setText('diag-identity', params.get('identity'));
-        setText('diag-policy', policy);
+        setText('diag-policy', policyResolved);
         setText('diag-type', params.get('type') || 'domainlist');
         setText('diag-category', params.get('category'));
         setText('diag-url', rawUrl);
         setText('diag-domain', domain);
 
-        // Toggle
+        // Toggle diagnostics
         const toggleLink = document.getElementById('diagnostic-toggle');
+        const diagContent = document.getElementById('diagnostic-content');
         if (toggleLink && diagContent) {
           toggleLink.addEventListener('click', (e) => {
             e.preventDefault();
