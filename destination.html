@@ -21,40 +21,50 @@
             font-size: 12px;
             color: #777;
         }
-        .diagnostic-toggle { cursor: pointer; color: #6a6a6a; text-decoration: underline; }
         .diagnostic-content {
-            display: none; margin-top: 6px; padding-top: 6px;
-            border-top: 1px dashed #ddd; color: #666; word-break: break-word;
+            display: none;
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px dashed #ddd;
+            color: #666;
+            word-break: break-word;
         }
         .kv { margin: 2px 0; }
         .kv .k { color: #888; }
         .kv .v { color: #333; }
+        .diagnostic-toggle {
+            cursor: pointer;
+            color: #6a6a6a;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
-    <!-- Logo -->
+    <!-- Logo (update the src if your logo is not in repo root) -->
     <div class="logo">
-        <img alt="HTWORLD Logo" src="https://raw.githubusercontent.com/GitHTWORLD/umbrella-blockpage/main/htworld-logo.jpg" />
+        <img src="https://raw.githubusercontent.com/GitHTWORLD/umbrella-blockpage/main/htworld-logo.jpg" alt="HTWORLD Logo">
     </div>
 
     <!-- Warning Box -->
     <div class="warning-box">
         <div class="warning-icon">⚠</div>
         <h2>This site is blocked due to Destination List Policy</h2>
+
+        <!-- Domain placeholder -->
         <div class="domain" id="domain">[domain]</div>
 
         <!-- Your wording -->
-        <p><span id="policy">SEE DIAGNOSTIC INFO</span> has blocked this website as it is not allowed based on the policies set forth by the HTWORLD IT Dept.</p>
+        <p><span id="policy">HTWORLD IT Dept</span> has blocked this website as it is not allowed based on the policies set forth by the HTWORLD IT Dept.</p>
         <p>
             If you believe this site to be blocked in error, submit a form below with your comments notating
-            <span id="policy">SEE DIAGNOSTIC INFO</span> blocked you, and why you believe it should be lifted.
+            <span id="policy">HTWORLD IT Dept</span> blocked you, and why you believe it should be lifted.
         </p>
         <p>Your form will be reviewed by our technicians and an email will be sent when a determination has been made.</p>
 
         <!-- Links -->
         <div class="footer-links">
-            <a href="https://yourformlink.example">Submit Unblock Request</a> |
-            <a href="https://your-report-link.example">Report Incorrect Block</a> |
+            <a href="https://yourformlink.example" target="_blank" rel="noopener">Submit Unblock Request</a> |
+            <a href="https://your-report-link.example" target="_blank" rel="noopener">Report Incorrect Block</a> |
             <a href="#" id="diagnostic-toggle">Diagnostic Info</a>
         </div>
     </div>
@@ -72,11 +82,11 @@
         </div>
     </div>
 
-    <!-- Robust parameter parsing + IP fallback -->
+    <!-- Robust parameter parsing + unified policy resolution -->
     <script>
-      // IP to Policy fallback mapping
+      // Display names without prefixes (HTWORLD./HTWSR- dropped)
       const ipPolicyMap = {
-        "23.92.1.137": "DOUGAL",
+        "23.92.1.137": "Dougal",
         "108.181.101.28": "Thunderbird",
         "108.181.246.146": "HTWORLD",
         "108.181.246.149": "Draconic",
@@ -85,20 +95,27 @@
         "108.181.101.204": "Retiacula",
         "108.181.93.189": "Retiacula"
       };
+
       function resolvePolicy(params, defaultPolicyLabel) {
         const explicitPolicy = params.get('policy');
-        if (explicitPolicy && explicitPolicy.trim() !== '') return explicitPolicy;
+        if (explicitPolicy && explicitPolicy.trim() !== '') {
+          // If explicit policy has prefixes, strip them for display
+          return explicitPolicy.replace(/^HTWSR-/, '').replace(/^HTWORLD\./, '');
+        }
         const clientIp = params.get('client_ip');
         if (clientIp && ipPolicyMap[clientIp]) return ipPolicyMap[clientIp];
         return defaultPolicyLabel;
       }
 
+      // Helper: ROT13 decode
       function rot13(str) {
         return str.replace(/[a-zA-Z]/g, function(c){
           const base = c <= 'Z' ? 65 : 97;
           return String.fromCharCode(((c.charCodeAt(0) - base + 13) % 26) + base);
         });
       }
+
+      // Helper: safely get hostname from a URL string
       function extractHostname(urlStr) {
         try {
           const decodedFirst = decodeURIComponent(urlStr);
@@ -109,13 +126,23 @@
         } catch (e) {
           try {
             const decoded = decodeURIComponent(urlStr);
-            return decoded.replace(/^https?:\/\//i, '').replace(/^uggc:\/\//i, rot13('uggc://').replace(/^https?:\/\//i, '')).split('/')[0];
-          } catch (e2) { return ''; }
+            return decoded
+              .replace(/^https?:\/\//i, '')
+              .replace(/^uggc:\/\//i, rot13('uggc://').replace(/^https?:\/\//i, ''))
+              .split('/')[0];
+          } catch (e2) {
+            return '';
+          }
         }
       }
 
       document.addEventListener('DOMContentLoaded', () => {
         const params = new URLSearchParams(window.location.search);
+
+        // Resolve policy ONCE and use everywhere
+        const policyResolved = resolvePolicy(params, 'HTWORLD IT Dept');
+        const policyEl = document.getElementById('policy');
+        if (policyEl) policyEl.textContent = policyResolved;
 
         // Domain from ?domain or derived from ?url
         let domain = params.get('domain');
@@ -124,12 +151,7 @@
         const domainEl = document.getElementById('domain');
         if (domainEl) domainEl.textContent = domain || '[domain]';
 
-        // Policy using explicit value or IP fallback
-        const policyResolved = resolvePolicy(params, 'HTWORLD IT Dept');
-        const policyEl = document.getElementById('policy');
-        if (policyEl) policyEl.textContent = policyResolved;
-
-        // Diagnostics
+        // Diagnostics (same resolved values)
         const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || '–'; };
         setText('diag-client-ip', params.get('client_ip'));
         setText('diag-identity', params.get('identity'));
