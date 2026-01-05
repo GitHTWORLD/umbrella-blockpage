@@ -1,184 +1,337 @@
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>Access Blocked by HTWORLD IT Dept</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin: 40px; }
-        .logo img { width: 120px; margin-bottom: 20px; }
-        .warning-box { border: 1px solid #ccc; padding: 20px; margin: 20px auto; width: 60%; background-color: #f9f9f9; border-radius: 8px; }
-        .warning-icon { color: #ff9900; font-size: 24px; margin-bottom: 10px; }
-        .domain { font-weight: bold; font-size: 18px; margin: 10px 0; }
-        .footer-links { margin-top: 20px; font-size: 14px; }
-        .footer-links a { margin: 0 10px; color: #0073e6; text-decoration: none; }
+  <meta charset="utf-8">
+  <title>Access Blocked by HTWORLD IT Dept</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin: 40px; color:#222; }
+    .logo img { width: 160px; height:auto; margin-bottom: 20px; }
+    .warning-box { border: 1px solid #ccc; padding: 20px; margin: 20px auto; width: 90%; max-width: 800px; background-color: #f9f9f9; border-radius: 8px; text-align:left; }
+    .warning-icon { color: #ff9900; font-size: 24px; margin-bottom: 10px; }
+    .warning-box h2 { margin: 8px 0 12px; text-align:center; }
+    .domain { font-weight: bold; font-size: 18px; margin: 10px 0; text-align:center; }
+    .footer-links { margin-top: 16px; font-size: 14px; text-align:center; }
+    .footer-links a { margin: 0 10px; color: #0073e6; text-decoration: none; }
 
-        /* Discreet diagnostic footer */
-        .diagnostic-container {
-            margin: 8px auto 0;
-            width: 60%;
-            text-align: left;
-            font-size: 12px;
-            color: #777;
-        }
-        .diagnostic-content {
-            display: none;
-            margin-top: 6px;
-            padding-top: 6px;
-            border-top: 1px dashed #ddd;
-            color: #666;
-            word-break: break-word;
-        }
-        .kv { margin: 2px 0; }
-        .kv .k { color: #888; }
-        .kv .v { color: #333; }
-        .diagnostic-toggle {
-            cursor: pointer;
-            color: #6a6a6a;
-            text-decoration: underline;
-        }
-    </style>
+    /* Discreet diagnostic footer */
+    .diagnostic-frame { width: 90%; max-width: 800px; margin: 8px auto 0; text-align:left; font-size: 13px; color: #666; }
+    .diag-toggle { text-align:right; margin-bottom:6px; }
+    .diag-toggle a { color:#6a6a6a; text-decoration: underline; font-size:12px; }
+    .diagnostic-content { display: none; margin-top: 6px; padding: 10px; border: 1px dashed #ddd; border-radius:6px; background:#fafafa; word-break: break-word; }
+    .kv { margin: 2px 0; }
+    .kv .k { color: #888; display:inline-block; min-width:150px; }
+    .kv .v { color: #333; }
+
+    /* Request review (collapsible) */
+    .request-container { width: 90%; max-width: 800px; margin: 12px auto; text-align:left; }
+    .request-toggle { color:#0066cc; text-decoration: underline; font-size:13px; cursor:pointer; display:inline-block; margin-bottom:6px; }
+    .request-form { display:none; padding:12px; border:1px dashed #ddd; background:#fafafa; border-radius:6px; }
+    .request-row { display:flex; gap:10px; margin-bottom:8px; flex-wrap:wrap; }
+    .request-row .col { flex:1 1 240px; min-width:240px; }
+    .request-form label { display:block; font-size:12px; color:#555; margin-bottom:4px; }
+    .request-form input[type="text"], .request-form input[type="email"], .request-form textarea {
+      width:100%; padding:8px 10px; font-size:14px; border:1px solid #ccc; border-radius:4px;
+    }
+    .request-form textarea { min-height:100px; resize:vertical; }
+    .request-actions { margin-top:10px; display:flex; gap:8px; align-items:center; }
+    .btn { background:#0073e6; color:#fff; border:none; padding:8px 14px; border-radius:4px; cursor:pointer; font-size:14px; }
+    .btn.secondary { background:#777; }
+    .request-status { font-size:12px; color:#666; display:none; }
+
+    @media (max-width: 640px) {
+      .warning-box, .diagnostic-frame, .request-container { width: 95%; }
+      .logo img { width: 140px; }
+    }
+  </style>
 </head>
 <body>
-    <!-- Logo (update the src if your logo is not in repo root) -->
-    <div class="logo">
-        <img src="https://raw.githubusercontent.com/GitHTWORLD/umbrella-blockpage/main/htworld-logo.jpg" alt="HTWORLD Logo">
+  <!-- Logo (update src if your logo is in /images/) -->
+  <div class="logo">
+    https://GitHTWORLD.github.io/umbrella-blockpage/images/HTWORLDLogo.png
+  </div>
+
+  <!-- Warning Box -->
+  <div class="warning-box">
+    <div class="warning-icon">⚠</div>
+    <h2>This site is blocked due to Category Policy</h2>
+
+    <!-- Domain placeholder -->
+    <p> 
+      <div class="domain" id="domain">[domain]</div>
+    </p>
+
+    <!-- Your wording with multiple policy mentions (use a shared class so all update) -->
+    <p><span class="policy-name">SEE DIAGNOSTIC INFO</span> has blocked this URL as it is not allowed based on HTWORLD IT Department Category Policy.</p>
+    <p>
+      If you believe this site to be blocked in error submit a form below with your comments notating
+      <span class="policy-name">SEE DIAGNOSTIC INFO</span> blocked you, and why you believe it should be lifted.
+    </p>
+    <p>Your form will be reviewed by our technicians and an email will be sent when a determination has been made.</p>
+
+    <!-- Links -->
+    <div class="footer-links">
+      #Submit unblock review</a> |
+      #Show diagnostic info</a>
     </div>
 
-    <!-- Warning Box -->
-    <div class="warning-box">
-        <div class="warning-icon">⚠</div>
-        <h2>This site is blocked due to Category Policy</h2>
+    <!-- Show the category name if provided -->
+    <p style="margin-top:10px; font-size:12px; text-align:center;">
+      This site was blocked due to the following category: <span id="category">[category]</span>
+    </p>
+  </div>
 
-        <!-- Domain placeholder -->
-        <div class="domain" id="domain">[domain]</div>
-
-        <!-- Your wording -->
-        <p>HTWORLD has blocked this URL as it is not allowed based on HTWORLD IT Department Category Policy.</p>
-        <p>
-            If you believe this site to be blocked in error submit a form below with your comments notating
-            <span id="policy">Roaming</span> blocked you, and why you believe it should be lifted.
-        </p>
-        <p>Your form will be reviewed by our technicians and an email will be sent when a determination has been made.</p>
-
-        <!-- Links -->
-        <div class="footer-links">
-            <a href="https://yourformlink.example" target="_blank" rel="noopener">Submit Unblock Request</a> |
-            <a href="https://your-report-link.example" target="_blank" rel="noopener">Report Incorrect Block</a> |
-            <a href="#" id="diagnostic-toggle">Diagnostic Info</a>
+  <!-- Request Review (collapsible) -->
+  <div class="request-container">
+    <div class="request-form" id="request-form">
+      <div class="request-row">
+        <div class="col">
+          <label for="req-name">Your name</label>
+          <input id="req-name" type="text" placeholder="First Last">
         </div>
-
-        <!-- Show the category name if provided -->
-        <p style="margin-top:10px; font-size:12px;">
-            This site was blocked due to the following category: <span id="category">[category]</span>
-        </p>
-    </div>
-
-    <!-- Discreet Diagnostic Info (collapsible) -->
-    <div class="diagnostic-container">
-        <div class="diagnostic-content" id="diagnostic-content">
-            <div class="kv"><span class="k">Client IP:</span> <span class="v" id="diag-client-ip">–</span></div>
-            <div class="kv"><span class="k">Identity:</span> <span class="v" id="diag-identity">–</span></div>
-            <div class="kv"><span class="k">Policy:</span> <span class="v" id="diag-policy">–</span></div>
-            <div class="kv"><span class="k">Block Type:</span> <span class="v" id="diag-type">Category</span></div>
-            <div class="kv"><span class="k">Category:</span> <span class="v" id="diag-category">–</span></div>
-            <div class="kv"><span class="k">Raw URL:</span> <span class="v" id="diag-url">–</span></div>
-            <div class="kv"><span class="k">Derived Domain:</span> <span class="v" id="diag-domain">–</span></div>
+        <div class="col">
+          <label for="req-email">Your email (reply-to) *</label>
+          <input id="req-email" type="email" placeholder="you@company.com" required>
         </div>
+      </div>
+      <div class="request-row">
+        <div class="col">
+          <label for="req-phone">Your phone (optional)</label>
+          <input id="req-phone" type="text" placeholder="+1 (555) 555-5555">
+        </div>
+        <div class="col">
+          <label for="req-dept">Dept/Team (optional)</label>
+          <input id="req-dept" type="text" placeholder="IT / Finance / Ops">
+        </div>
+      </div>
+      <div class="request-row">
+        <div class="col">
+          <label for="req-comments">Reason & details for review *</label>
+          <textarea id="req-comments" placeholder="Describe why access is needed, urgency, and any business impact..." required></textarea>
+        </div>
+      </div>
+      <div class="request-actions">
+        <button class="btn" id="req-submit">Send to Helpdesk</button>
+        <button class="btn secondary" id="req-cancel">Cancel</button>
+        <span class="request-status" id="req-status">Sending…</span>
+      </div>
     </div>
+  </div>
 
-    <!-- Robust parameter parsing + unified policy resolution -->
-    <script>
-      // Display names without prefixes (HTWORLD./HTWSR- dropped)
-      const ipPolicyMap = {
-        "23.92.1.137": "Dougal",
-        "108.181.101.28": "Thunderbird",
-        "108.181.246.146": "HTWORLD",
-        "108.181.246.149": "Draconic",
-        "108.181.93.188": "Demiguise",
-        "212.83.154.153": "MACUSA",
-        "108.181.101.204": "Retiacula",
-        "108.181.93.189": "Retiacula"
-      };
+  <!-- Discreet Diagnostic Info (collapsible) -->
+  <div class="diagnostic-frame">
+    <div class="diagnostic-content" id="diagnostic-content">
+      <div class="kv"><span class="k">Client IP:</span>      <span class="v" id="diag-client-ip">–</span></div>
+      <div class="kv"><span class="k">Identity:</span>       <span class="v" id="diag-identity">–</span></div>
+      <div class="kv"><span class="k">Policy:</span>         <span class="v" id="diag-policy">–</span></div>
+      <div class="kv"><span class="k">Block Type:</span>     <span class="v" id="diag-type">Category</span></div>
+      <div class="kv"><span class="k">Category:</span>       <span class="v" id="diag-category">–</span></div>
+      <div class="kv"><span class="k">Raw URL:</span>        <span class="v" id="diag-url">–</span></div>
+      <div class="kv"><span class="k">Derived Domain:</span> <span class="v" id="diag-domain">–</span></div>
+    </div>
+  </div>
 
-      function resolvePolicy(params, defaultPolicyLabel) {
-        const explicitPolicy = params.get('policy');
-        if (explicitPolicy && explicitPolicy.trim() !== '') {
-          // If explicit policy has prefixes, strip them for display
-          return explicitPolicy.replace(/^HTWSR-/, '').replace(/^HTWORLD\./, '');
-        }
-        const clientIp = params.get('client_ip');
-        if (clientIp && ipPolicyMap[clientIp]) return ipPolicyMap[clientIp];
-        return defaultPolicyLabel;
+  <!-- Robust parameter parsing + unified policy resolution + review form -->
+  <script>
+    // Map IP → display policy (prefixes removed)
+    const ipPolicyMap = {
+      "23.92.1.137": "Dougal",
+      "108.181.101.28": "Thunderbird",
+      "108.181.246.146": "HTWORLD",
+      "108.181.246.149": "Draconic",
+      "108.181.93.188": "Demiguise",
+      "212.83.154.153": "MACUSA",
+      "108.181.101.204": "Retiacula",
+      "108.181.93.189": "Retiacula"
+    };
+
+    function resolvePolicy(params, defaultPolicyLabel) {
+      const explicitPolicy = params.get('policy');
+      if (explicitPolicy && explicitPolicy.trim() !== '') {
+        return explicitPolicy.replace(/^HTWSR-/, '').replace(/^HTWORLD\./, '');
       }
+      const clientIp = params.get('client_ip');
+      if (clientIp && ipPolicyMap[clientIp]) return ipPolicyMap[clientIp];
+      return defaultPolicyLabel;
+    }
 
-      function rot13(str) {
-        return str.replace(/[a-zA-Z]/g, function(c){
-          const base = c <= 'Z' ? 65 : 97;
-          return String.fromCharCode(((c.charCodeAt(0) - base + 13) % 26) + base);
+    // ROT13 decode
+    function rot13(str) {
+      return str.replace(/[a-zA-Z]/g, function(c){
+        const base = c <= 'Z' ? 65 : 97;
+        return String.fromCharCode(((c.charCodeAt(0) - base + 13) % 26) + base);
+      });
+    }
+
+    // Safely get hostname from URL string (handles ROT13 + percent-encoding)
+    function extractHostname(urlStr) {
+      try {
+        const decodedFirst = decodeURIComponent(urlStr);
+        const looksRot13 = decodedFirst.startsWith('uggc://');
+        const decoded = looksRot13 ? rot13(decodedFirst) : decodedFirst;
+        const u = new URL(decoded);
+        return u.hostname;
+      } catch (e) {
+        try {
+          const decoded = decodeURIComponent(urlStr);
+          return decoded
+            .replace(/^https?:\/\//i, '')
+            .replace(/^uggc:\/\//i, rot13('uggc://').replace(/^https?:\/\//i, ''))
+            .split('/')[0];
+        } catch (e2) {
+          return '';
+        }
+      }
+    }
+
+    // Helpers for review + diagnostics
+    function getElText(id, fallback="") {
+      const el = document.getElementById(id);
+      return (el && el.textContent && el.textContent.trim()) ? el.textContent.trim() : fallback;
+    }
+    function nowDateTime() {
+      const d = new Date();
+      const fmt = new Intl.DateTimeFormat([], {
+        year: 'numeric', month: 'short', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        timeZoneName: 'short'
+      });
+      return { local: fmt.format(d), iso: d.toISOString() };
+    }
+    function buildDiagnosticSnapshot() {
+      const params = new URLSearchParams(window.location.search);
+      const derivedDomain = getElText('domain', '');
+      const policyResolved = document.querySelector('.policy-name')?.textContent?.trim() || '';
+      const diagIdentity = getElText('diag-identity', '') || params.get('identity') || '';
+      const diagType = getElText('diag-type', '') || params.get('type') || 'category';
+      const diagCategory = getElText('diag-category', '') || params.get('category') || '';
+      const clientIp = params.get('client_ip') || getElText('diag-client-ip', '');
+      const rawUrl = params.get('url') || getElText('diag-url', '');
+      const pageUrl = window.location.href;
+      const ts = nowDateTime();
+
+      return {
+        timestamp_local: ts.local,
+        timestamp_iso: ts.iso,
+        domain: derivedDomain || '[unknown]',
+        policy: policyResolved || '[unknown]',
+        identity: diagIdentity || '[unknown]',
+        client_ip: clientIp || '[unknown]',
+        block_type: diagType || '[unknown]',
+        category: diagCategory || '',
+        raw_url: rawUrl || '',
+        derived_domain: derivedDomain || '',
+        page_url: pageUrl
+      };
+    }
+    function buildMailto(diagnostic, name, email, phone, dept, comments) {
+      const subj = `Unblock Request: ${diagnostic.domain} (${diagnostic.block_type})`;
+      const bodyLines = [
+        `Requester Name: ${name}`,
+        `Requester Email: ${email}`,
+        `Requester Phone: ${phone || ''}`,
+        `Requester Dept: ${dept || ''}`,
+        ``,
+        `Reason for review:`,
+        `${comments}`,
+        ``,
+        `--- Diagnostic Snapshot ---`,
+        `Time (Local): ${diagnostic.timestamp_local}`,
+        `Time (ISO): ${diagnostic.timestamp_iso}`,
+        `Domain: ${diagnostic.domain}`,
+        `Policy: ${diagnostic.policy}`,
+        `Identity: ${diagnostic.identity}`,
+        `Client IP: ${diagnostic.client_ip}`,
+        `Block Type: ${diagnostic.block_type}`,
+        `Category: ${diagnostic.category}`,
+        `Raw URL: ${diagnostic.raw_url}`,
+        `Derived Domain: ${diagnostic.derived_domain}`,
+        `Page URL: ${diagnostic.page_url}`
+      ];
+      return `mailto:Helpdesk@hosww.net?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(bodyLines.join('\n'))}`;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+
+      // Resolve policy (Category default = "Roaming")
+      const policyResolved = resolvePolicy(params, 'Roaming');
+      document.querySelectorAll('.policy-name').forEach(el => { el.textContent = policyResolved; });
+
+      // Domain decode
+      let domain = params.get('domain');
+      const rawUrl = params.get('url');
+      if (!domain && rawUrl) domain = extractHostname(rawUrl);
+      const domainEl = document.getElementById('domain');
+      if (domainEl) domainEl.textContent = domain || '[domain]';
+
+      // Category text
+      const categoryResolved = params.get('category') || 'Unknown Category';
+      const categoryEl = document.getElementById('category');
+      if (categoryEl) categoryEl.textContent = categoryResolved;
+
+      // Diagnostics (same resolved values)
+      const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || '–'; };
+      setText('diag-client-ip', params.get('client_ip'));
+      setText('diag-identity', params.get('identity'));
+      setText('diag-policy', policyResolved);
+      setText('diag-type', params.get('type') || 'category');
+      setText('diag-category', categoryResolved);
+      setText('diag-url', rawUrl);
+      setText('diag-domain', domain);
+
+      // Collapsible toggles
+      const diagToggle = document.getElementById('diagnostic-toggle');
+      const diagContent = document.getElementById('diagnostic-content');
+      if (diagToggle && diagContent) {
+        diagToggle.addEventListener('click', (e) => {
+          e.preventDefault();
+          diagContent.style.display = (diagContent.style.display === 'none' || diagContent.style.display === '') ? 'block' : 'none';
+          diagToggle.textContent = diagContent.style.display === 'block' ? 'Hide diagnostic info' : 'Show diagnostic info';
         });
       }
 
-      function extractHostname(urlStr) {
-        try {
-          const decodedFirst = decodeURIComponent(urlStr);
-          const looksRot13 = decodedFirst.startsWith('uggc://');
-          const decoded = looksRot13 ? rot13(decodedFirst) : decodedFirst;
-          const u = new URL(decoded);
-          return u.hostname;
-        } catch (e) {
-          try {
-            const decoded = decodeURIComponent(urlStr);
-            return decoded
-              .replace(/^https?:\/\//i, '')
-              .replace(/^uggc:\/\//i, rot13('uggc://').replace(/^https?:\/\//i, ''))
-              .split('/')[0];
-          } catch (e2) {
-            return '';
-          }
-        }
+      const reqToggle = document.getElementById('request-toggle');
+      const reqForm = document.getElementById('request-form');
+      if (reqToggle && reqForm) {
+        reqToggle.addEventListener('click', (e) => {
+          e.preventDefault();
+          reqForm.style.display = (reqForm.style.display === 'none' || reqForm.style.display === '') ? 'block' : 'none';
+          reqToggle.textContent = reqForm.style.display === 'block' ? 'Hide unblock review form' : 'Submit unblock review';
+        });
       }
-
-      document.addEventListener('DOMContentLoaded', () => {
-        const params = new URLSearchParams(window.location.search);
-
-        // Resolve policy ONCE and use everywhere (Category default "Roaming")
-        const policyResolved = resolvePolicy(params, 'Roaming');
-        const policyEl = document.getElementById('policy');
-        if (policyEl) policyEl.textContent = policyResolved;
-
-        // Domain from ?domain or derived from ?url
-        let domain = params.get('domain');
-        const rawUrl = params.get('url');
-        if (!domain && rawUrl) domain = extractHostname(rawUrl);
-        const domainEl = document.getElementById('domain');
-        if (domainEl) domainEl.textContent = domain || '[domain]';
-
-        // Category
-        const categoryResolved = params.get('category') || 'Unknown Category';
-        const categoryEl = document.getElementById('category');
-        if (categoryEl) categoryEl.textContent = categoryResolved;
-
-        // Diagnostics (same resolved values)
-        const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || '–'; };
-        setText('diag-client-ip', params.get('client_ip'));
-        setText('diag-identity', params.get('identity'));
-        setText('diag-policy', policyResolved);
-        setText('diag-type', params.get('type') || 'category');
-        setText('diag-category', categoryResolved);
-        setText('diag-url', rawUrl);
-        setText('diag-domain', domain);
-
-        // Toggle diagnostics
-        const toggleLink = document.getElementById('diagnostic-toggle');
-        const diagContent = document.getElementById('diagnostic-content');
-        if (toggleLink && diagContent) {
-          toggleLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            diagContent.style.display = (diagContent.style.display === 'none' || diagContent.style.display === '') ? 'block' : 'none';
-          });
-        }
+      document.getElementById('req-cancel')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        reqForm.style.display = 'none';
+        reqToggle.textContent = 'Submit unblock review';
       });
-    </script>
+
+      // Submit review via mailto (cheapest/easiest)
+      document.getElementById('req-submit')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        const statusEl = document.getElementById('req-status');
+        statusEl.style.display = 'inline';
+
+        const name = document.getElementById('req-name')?.value.trim() || '';
+        const email = document.getElementById('req-email')?.value.trim() || '';
+        const phone = document.getElementById('req-phone')?.value.trim() || '';
+        const dept = document.getElementById('req-dept')?.value.trim() || '';
+        const comments = document.getElementById('req-comments')?.value.trim() || '';
+
+        if (!email || !comments) {
+          statusEl.textContent = 'Please provide your email and comments.';
+          setTimeout(() => statusEl.style.display = 'none', 3000);
+          return;
+        }
+
+        const diag = buildDiagnosticSnapshot();
+        const mailto = buildMailto(diag, name, email, phone, dept, comments);
+        window.location.href = mailto;
+        statusEl.textContent = 'Opening email client…';
+        setTimeout(() => { statusEl.style.display = 'none'; }, 2500);
+      });
+    });
+  </script>
 </body>
 </html>
